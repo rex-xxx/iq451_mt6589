@@ -1,5 +1,5 @@
 export PATH=~/Your_Toolchain_PATH/
-for example /alps/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.6/bin
+for example /alps/prebuilts/gcc/arm-linux-gnueabi-linaro_4.9.1-2014.05/bin/arm-linux-gnueabi-
 USE_CCACHE=1
 
 Build Command:
