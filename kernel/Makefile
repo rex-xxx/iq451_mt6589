@@ -1,11 +1,10 @@
 VERSION = 3
 PATCHLEVEL = 4
-SUBLEVEL = 5
+SUBLEVEL = 67
 EXTRAVERSION =
 NAME = Saber-toothed Squirrel
 
-# Temp hack for mtk modules built           * add hyperion *
-
+# Temp hack for mtk modules built        
 export TARGET_BUILD_VARIANT = user
 
 # *DOCUMENTATION*
@@ -199,7 +198,7 @@ export KBUILD_BUILDHOST := $(SUBARCH)
 #ARCH		?= $(SUBARCH)
 #CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
 ARCH		?= arm
-CROSS_COMPILE	?= /root/android/toolchain-4.6.3/bin/arm-linux-androideabi-
+CROSS_COMPILE	?= /home/hyperion/android_tools/linaro_toolchains_2014-2014.05/arm-linux-gnueabi-linaro_4.9.1-2014.05/bin/arm-linux-gnueabi-
 
 # Architecture as present in compile.h
 UTS_MACHINE 	:= $(ARCH)
