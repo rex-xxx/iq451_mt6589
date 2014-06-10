@@ -29,6 +29,10 @@
 #include <asm/atomic.h>
 #include <asm/uaccess.h>
 
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+#include <linux/input/sweep2wake.h>
+#endif
+
 
 #include <mach/mt_reg_base.h>
 #include <mach/mt_boot.h>
@@ -216,16 +220,15 @@ void kpd_auto_test_for_factorymode(void)
 {
 	unsigned int COL_REG[8];
 	int i;
-	int time = 500;
 	upmu_set_rg_homekey_puen(0x00);
 	
 	kpd_pwrkey_pmic_handler(1);
-	msleep(time);
+	msleep(100);
 	kpd_pwrkey_pmic_handler(0);
 	
 #ifdef KPD_PMIC_RSTKEY_MAP
 	kpd_pmic_rstkey_handler(1);
-	msleep(time);
+	msleep(100);
 	kpd_pmic_rstkey_handler(0);
 #endif
 
@@ -236,10 +239,10 @@ void kpd_auto_test_for_factorymode(void)
 	{
 		if (COL_REG[i] != 0)
 		{
-			msleep(time);
+			msleep(100);
 			kpd_print("kpd kcolumn %d pull down!\n", COL_REG[i]);
 			mt_set_gpio_pull_select(COL_REG[i], 0);
-			msleep(time);
+			msleep(100);
 			kpd_print("kpd kcolumn %d pull up!\n", COL_REG[i]);
 			mt_set_gpio_pull_select(COL_REG[i], 1);
 		}
@@ -1024,6 +1027,11 @@ for(j = 0; j < 6; j++) {
 		if (kpd_keymap[i] != 0)
 			__set_bit(kpd_keymap[i], kpd_input_dev->keybit);
 	}
+
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+	sweep2wake_setdev(kpd_input_dev);
+	printk("[SWEEP2WAKE]: power key capture done\n");
+#endif
 
 #if KPD_AUTOTEST
 	for (i = 0; i < ARRAY_SIZE(kpd_auto_keymap); i++)
