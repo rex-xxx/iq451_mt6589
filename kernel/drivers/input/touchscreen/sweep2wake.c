@@ -44,7 +44,7 @@
 extern bool is_single_touch(void);
 
 /* Resources */
-int sweep2wake = 0;
+int sweep2wake = 2;
 int doubletap2wake = 1;
 int dt2w_switch_temp = 1;
 int dt2w_changed = 0;
@@ -71,8 +71,8 @@ unsigned int dt2w_x[2] = {0, 0};
 unsigned int dt2w_y[2] = {0, 0};
 int status[2] = {0,0};
 #define S2W_TIMEOUT 75
-#define DT2W_TIMEOUT_MAX 120
-#define DT2W_TIMEOUT_MIN 12
+#define DT2W_TIMEOUT_MAX 160
+#define DT2W_TIMEOUT_MIN 10
 #define DT2W_DELTA 75
 
 //#ifdef CONFIG_CMDLINE_OPTIONS
