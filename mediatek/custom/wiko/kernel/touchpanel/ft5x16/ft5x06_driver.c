@@ -17,6 +17,9 @@
 #include <linux/rtpm_prio.h>
 
 #include <linux/wakelock.h>
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
 
 #include <asm/uaccess.h>
 
@@ -49,7 +52,7 @@
 extern struct tpd_device *tpd;
  
 static DECLARE_WAIT_QUEUE_HEAD(waiter);
-static int s2w_st_flag=0; //s2w
+//static int s2w_st_flag=0; //s2w
 static void tpd_eint_interrupt_handler(void);
  extern void mt65xx_eint_unmask(unsigned int line);
  extern void mt65xx_eint_mask(unsigned int line);
@@ -162,7 +165,7 @@ static  void tpd_down(tinno_ts_data *ts, int x, int y, int pressure, int trackID
        printk("[SWEEP2WAKE]: tpd down\n");
 #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
 		if (sweep2wake) {
-printk("[SWEEP2WAKE]: detecting sweep\n");
+//printk("[SWEEP2WAKE]: detecting sweep\n");
 			detect_sweep2wake(x, y, jiffies, trackID);
 		}
 #endif
@@ -194,14 +197,14 @@ static  int tpd_up(tinno_ts_data *ts, int x, int y, int pressure, int trackID)
         //input_report_abs(tpd->dev, ABS_MT_TRACKING_ID, trackID);
         input_mt_sync(tpd->dev);
         __clear_bit(trackID, &ts->fingers_flag);
-
-printk("[SWEEP2WAKE]: inside tpd up\n");
+        
+//printk("[SWEEP2WAKE]: inside tpd up\n");
 #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
 s2w_st_flag = 0;
 				if (sweep2wake > 0) {
-					printk("[sweep2wake]:line : %d | func : %s\n", __LINE__, __func__);
-printk("[SWEEP2WAKE]: resetin s2w param\n");
-					printk("[sweep2wake]:line : %d | func : %s\n", __LINE__, __func__);
+					//printk("[sweep2wake]:line : %d | func : %s\n", __LINE__, __func__);
+					//printk("[SWEEP2WAKE]: resetin s2w param\n");
+					//printk("[sweep2wake]:line : %d | func : %s\n", __LINE__, __func__);
 					exec_count = true;
 					barrier[0] = false;
 					barrier[1] = false;
@@ -215,7 +218,7 @@ printk("[SWEEP2WAKE]: detecting d2w\n");
 					doubletap2wake_func(x, y, jiffies);
 				}
 #endif
-        
+
         //TPD_UP_DEBUG_TRACK(x,y);
         if (FACTORY_BOOT == get_boot_mode() || RECOVERY_BOOT == get_boot_mode()) {   
             tpd_button(x, y, 0); 
@@ -462,7 +465,7 @@ printk("[SWEEP2WAKE]: detecting d2w\n");
                 #if 1
 			if(ts->pcount > 0)
 			{
-                           s2w_st_flag = ts->pcount;
+				s2w_st_flag = ts->pcount;
 				for ( i=0; i < ts->pcount; i++ )
 				{
 					tpd_down(ts, touch_point[i].x, touch_point[i].y, touch_point[i].pressure, touch_point[i].touch_id);//<20120714><for multi-touch id>wangyanhui
@@ -537,27 +540,6 @@ void fts_5x06_hw_reset(void)
 	mdelay(1);
 }
 
-#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
-/* gives back true if only one touch is recognized */
-bool is_single_touch(void)
-{
-	/*int i = 0, cnt = 0;
-
-	for( i= 0; i<MAX_NUM_FINGER; i++ ) {
-		if ((!fingerInfo[i].status) ||
-				(fingerInfo[i].status == TOUCH_EVENT_RELEASE))
-		continue;
-		else cnt++;
-	}*/
-printk("[SWEEP2WAKE]: inside single touch\n");
-	if (s2w_st_flag == 1)
-	return true;
-	else
-	return false;
-}
-#endif
-
-
 static void fts_5x06_hw_init(void)
 {
 	//make sure the WakeUp is high before it enter power on mode, 
@@ -598,7 +580,7 @@ static char *fts_get_vendor_name(int vendor_id)
 	return "UNKNOWN";
 }
 
- static int __devinit tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
+static int __devinit tpd_probe(struct i2c_client *client, const struct i2c_device_id *id)
  {	 
 	int retval = TPD_OK;
 	int panel_version = 0;
@@ -728,7 +710,7 @@ err_check_functionality_failed:
 	return -1;
  }
 
- static int __devexit tpd_remove(struct i2c_client *client)
+static int __devexit tpd_remove(struct i2c_client *client)
 {
 	CTP_DBG("TPD removed\n");
     
@@ -756,7 +738,7 @@ err_check_functionality_failed:
 	return 0; 
 }
 
-static void tpd_resume(struct early_suspend *h)
+static void tpd_resume(struct power_suspend *h)
 {
 #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
 printk("[SWEEP2WAKE]: resume\n");
@@ -791,10 +773,13 @@ printk("[SWEEP2WAKE]: resume\n");
         g_need_refresh_tp_flag = 1;
         
 	}
- }
- #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
+}
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
 	else if (sweep2wake > 0 || doubletap2wake > 0)
 	mt65xx_eint_unmask(CUST_EINT_TOUCH_PANEL_NUM);
+#endif
+#ifdef CONFIG_POWERSUSPEND
+	//set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE); // Yank555.lu : add hook to handle powersuspend tasks (wakeup)
 #endif
 }
  
@@ -811,14 +796,14 @@ void ft5x06_complete_unfinished_event( void )
 	input_sync(tpd->dev);
 }
 
-static void tpd_suspend(struct early_suspend *h)
+static void tpd_suspend(struct power_suspend *h)
  {
 	int ret = 0;
 	int iRetry = 5;
 	const char data = 0x3;
 #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
 	scr_suspended = true;
-printk("[SWEEP2WAKE]: early suspernd\n");
+printk("[SWEEP2WAKE]: power suspernd\n");
 	if (sweep2wake == 0 && doubletap2wake == 0)
 #endif
 	{
@@ -885,7 +870,10 @@ printk("[SWEEP2WAKE]: early suspernd\n");
  } 
 #ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
 	else if (sweep2wake > 0 || doubletap2wake > 0)
-	mt65xx_eint_unmask(CUST_EINT_TOUCH_PANEL_NUM);
+		mt65xx_eint_unmask(CUST_EINT_TOUCH_PANEL_NUM);
+#endif
+#ifdef CONFIG_POWERSUSPEND
+	//set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE); // Yank555.lu : add hook to handle powersuspend tasks (sleep)
 #endif
 }
 

@@ -22,11 +22,14 @@
 #define _LINUX_SWEEP2WAKE_H
 
 #include <linux/input.h>
-#include <linux/earlysuspend.h>
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
 #include <linux/hrtimer.h>
 //#include <linux/input/lge_touch_core.h>
 
 extern int sweep2wake;
+extern int s2w_st_flag;
 extern int doubletap2wake;
 extern bool scr_suspended;
 extern bool scr_on_touch;

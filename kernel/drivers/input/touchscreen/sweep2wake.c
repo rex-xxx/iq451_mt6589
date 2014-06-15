@@ -33,18 +33,19 @@
 
 /* Tuneables */
 #define DEBUG                   1
-#define DEFAULT_S2W_Y_LIMIT             1230
-#define DEFAULT_S2W_X_MAX               690
+#define DEFAULT_S2W_Y_LIMIT             1230 
+#define DEFAULT_S2W_X_MAX               690 
 #define DEFAULT_S2W_X_B1                50
 #define DEFAULT_S2W_X_B2                150
 #define DEFAULT_S2W_X_FINAL             50
 #define DEFAULT_S2W_PWRKEY_DUR          60
 
 /* external function from the ts driver */
-extern bool is_single_touch(void);
+bool is_single_touch(void);
 
 /* Resources */
-int sweep2wake = 2;
+int sweep2wake = 1;
+int s2w_st_flag = 0;
 int doubletap2wake = 1;
 int dt2w_switch_temp = 1;
 int dt2w_changed = 0;
@@ -71,8 +72,8 @@ unsigned int dt2w_x[2] = {0, 0};
 unsigned int dt2w_y[2] = {0, 0};
 int status[2] = {0,0};
 #define S2W_TIMEOUT 75
-#define DT2W_TIMEOUT_MAX 160
-#define DT2W_TIMEOUT_MIN 10
+#define DT2W_TIMEOUT_MAX 120
+#define DT2W_TIMEOUT_MIN 12
 #define DT2W_DELTA 75
 
 //#ifdef CONFIG_CMDLINE_OPTIONS
@@ -147,6 +148,23 @@ void sweep2wake_pwrtrigger(void) {
 printk("[SWEEP2WAKE]: power triggered\n");
 	schedule_work(&sweep2wake_presspwr_work);
         return;
+}
+
+bool is_single_touch(void)
+{
+	/*int i = 0, cnt = 0;
+
+	for( i= 0; i<MAX_NUM_FINGER; i++ ) {
+		if ((!fingerInfo[i].status) ||
+				(fingerInfo[i].status == TOUCH_EVENT_RELEASE))
+		continue;
+		else cnt++;
+	}*/
+printk("[SWEEP2WAKE]: inside single touch\n");
+	if (s2w_st_flag == 1)
+	return true;
+	else
+	return false;
 }
 
 /* Sweep2wake main function */

@@ -1530,7 +1530,7 @@ __init int mt6589_board_init(void)
 #else
 		key = 0;
 #endif
-		memcpy(serial_number, "WIKO", 4);
+		memcpy(serial_number, "FLY_IQ451", 9);
 		retval = kobject_init_and_add(&sn_kobj, &sn_ktype, NULL, "sys_info");
 
 		if (retval < 0)
